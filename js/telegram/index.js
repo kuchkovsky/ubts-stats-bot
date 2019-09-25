@@ -52,17 +52,19 @@ bot.on('contact', ctx => {
 });
 
 bot.use(async (ctx, next) => {
-  const chatId = ctx.message.chat.id;
-  if (!userMap[chatId]) {
-    try {
-      const response = await axios.get(deriveUserByTelegramIdUrl(chatId));
-      userMap[chatId] = response.data.id;
-    } catch (error) {
-      await ctx.reply(INTERCEPTER.NOT_AUTHORIZED);
-      return ctx.replyWithPhoto({ source: createReadStream(ROZBIYNYK_IMG_PATH) });
+  if (ctx.message) {
+    const chatId = ctx.message.chat.id;
+    if (!userMap[chatId]) {
+      try {
+        const response = await axios.get(deriveUserByTelegramIdUrl(chatId));
+        userMap[chatId] = response.data.id;
+      } catch (error) {
+        await ctx.reply(INTERCEPTER.NOT_AUTHORIZED);
+        return ctx.replyWithPhoto({ source: createReadStream(ROZBIYNYK_IMG_PATH) });
+      }
     }
+    ctx.state.ubtsUserId = userMap[chatId];
   }
-  ctx.state.ubtsUserId = userMap[chatId];
   return next(ctx);
 });
 
