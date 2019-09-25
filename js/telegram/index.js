@@ -89,7 +89,19 @@ schedule.scheduleJob('0 14 * * *', async () => {
       .filter(user => user.telegramId
         && !previousWeekRecordsResponse.data.some(record => record.userId === user.id));
     telegramUsersMailingList
-      .forEach(user => bot.telegram.sendMessage(user.telegramId, SCHEDULER.STATS_REMINDER));
+      .forEach(user => bot.telegram.sendMessage(user.telegramId, SCHEDULER.STATS_REMINDER)
+        .catch(error => {
+          const message = 'Failed to send message for user with '
+            + `id=${user.id}, chatId=${user.telegramId}. Details: `;
+          console.error(message, error.response);
+          if (error.response.description.includes('chat not found')) {
+            axios.post(deriveMessengerIdsUrl(user.id), { telegram: null })
+              .then(() => {
+                console.log(`Successfully deleted no longer used chatId=${user.telegramId}`);
+              })
+              .catch(e => console.error(e));
+          }
+        }));
   } catch (error) {
     console.error(error);
   }
