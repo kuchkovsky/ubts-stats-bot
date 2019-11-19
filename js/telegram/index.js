@@ -59,8 +59,9 @@ bot.use(async (ctx, next) => {
         const response = await axios.get(deriveUserByTelegramIdUrl(chatId));
         userMap[chatId] = response.data.id;
       } catch (error) {
-        await ctx.reply(INTERCEPTER.NOT_AUTHORIZED);
-        return ctx.replyWithPhoto({ source: createReadStream(ROZBIYNYK_IMG_PATH) });
+        ctx.reply(INTERCEPTER.NOT_AUTHORIZED)
+          .then(() => ctx.replyWithPhoto({ source: createReadStream(ROZBIYNYK_IMG_PATH) }))
+          .catch(e => console.error(e));
       }
     }
     ctx.state.ubtsUserId = userMap[chatId];
